@@ -47,6 +47,5 @@ CLAUDE.local.md
 /crawler/.venv/
 __pycache__/
 
-/src/generated/
 
 .mcp.json*
