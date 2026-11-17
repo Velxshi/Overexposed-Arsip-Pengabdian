@@ -1,10 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
-
-// Wajib agar Next.js selalu membuat state dan verifier baru di setiap klik login
-export const dynamic = "force-dynamic";
+import { connection } from "next/server";
 
 export async function GET() {
+  // Memaksa rute dieksekusi secara dinamis pada setiap request di mode cacheComponents
+  await connection();
+
   const ssoUrl = process.env.SSO_URL;
   const clientId = process.env.SSO_CLIENT_ID;
   const redirectUri = process.env.SSO_REDIRECT_URI;
