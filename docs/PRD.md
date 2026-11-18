@@ -2,7 +2,15 @@
 
 Dokumen ini adalah acuan untuk Claude Code dan pengembang. Tujuannya menjelaskan apa yang dibangun, keputusan yang sudah diambil, dan keputusan yang belum. **Bagian bertanda "Usulan" belum disetujui tim. Jangan diperlakukan sebagai keputusan final.** Bagian "Keputusan terbuka" harus ditanyakan ke pemilik proyek, bukan ditebak.
 
-Versi: 1.0. Berdasarkan ERD versi 6.
+Versi: 1.4. Berdasarkan ERD versi 6.
+
+| Versi | Tanggal    | Perubahan                                                                                                                                                                                                                                                      |
+| ----- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0   | (awal)     | Versi awal.                                                                                                                                                                                                                                                    |
+| 1.1   | 2026-11-17 | Crawler diputuskan di Render Web Service gratis, on-demand, tanpa cron dan tanpa monitor ping. Alur sinkron diperjelas (warm-up, async, status di database). Aturan 7 hari berlaku untuk semua peran dan tidak bisa dipaksa. Keputusan deploy crawler ditutup. |
+| 1.2   | 2026-11-17 | Role admin di bagian 8.1 diganti Staff Kaprodi (rute `/api/staff-kaprodi/sinkron`). Catatan "Admin belum ada di SSO" dihapus, pertanyaan hak Kaprodi ditambahkan ke bagian 12.                                                                                 |
+| 1.3   | 2026-11-17 | Pengisian `sinta_id` untuk Staff Kaprodi dibuat opsional (5.1, 8.1). Pertanyaan terbuka nomor 1 ditutup.                                                                                                                                                       |
+| 1.4   | 2026-11-17 | Sesi disimpan di cookie terenkripsi (refresh token dienkripsi dengan kunci dari `SESSION_SECRET`). Tidak ada tabel sesi. Aturan refresh diperjelas dan risiko pencabutan sesi ditambahkan ke bagian 12. |
 
 ---
 
@@ -25,7 +33,8 @@ Kedua modul berada di **satu aplikasi Next.js dengan satu database**. Pengembang
 | Verifikasi JWT SSO | `jose`                                                                                                  |
 | Crawler            | Python, dibungkus layanan FastAPI terpisah di folder `crawler/`                                         |
 | Library Python     | `requests`, `beautifulsoup4`, `psycopg` (v3)                                                            |
-| Tempat deploy      | **Belum diputuskan.** Jangan mengasumsikan Vercel atau VPS. Sediakan `Dockerfile` untuk layanan Python. |
+| Deploy crawler     | **Render Web Service paket gratis** (lihat bagian 8).                                                   |
+| Deploy Next.js     | **Belum diputuskan.** Jangan mengasumsikan Vercel atau VPS. Sediakan `Dockerfile` untuk layanan Python. |
 
 Database sebelumnya MariaDB (dump `db_belajarcrawling`). Sekarang Postgres, jadi kode dan skema lama perlu disesuaikan (lihat bagian 9).
 
@@ -46,19 +55,21 @@ SSO memakai OAuth 2.0 Authorization Code, PKCE (S256), dan access token JWT RS25
 3. Setelah login, SSO mengalihkan ke `redirect_uri` (`/auth/callback`) membawa `code` dan `state`.
 4. Modul memastikan `state` cocok, lalu dari backend menukar `code` ke `{SSO}/api/sso/token` (dengan `client_secret` dan `code_verifier`).
 5. Modul memverifikasi JWT dengan `jose` (`algorithms: ["RS256"]`, `issuer`, `audience`) dan kunci publik dari `{SSO}/api/sso/jwks`.
-6. Modul membuat sesi lokal (cookie `httpOnly`, `secure`, `sameSite=lax`) dan menyimpan refresh token.
+6. Modul membuat sesi lokal berupa cookie `httpOnly`, `secure`, `sameSite=lax` yang berisi refresh token **terenkripsi** (AES-256-GCM, kunci turunan dari `SESSION_SECRET`). Tidak ada tabel sesi di database.
 
 Aturan penting:
 
 - Klaim token: `sub`, `name`, `email`, `nip`, `role`, `iss`, `aud`, `exp`. Pakai `sub` sebagai kunci akun.
-- Umur access token 15 menit, refresh token 30 hari dan **dirotasi** setiap dipakai. Selalu simpan yang terbaru. Hanya satu proses yang boleh me-refresh pada satu waktu, karena memakai token lama membatalkan seluruh rantai.
-- Umur sesi lokal sama dengan access token. Saat habis, panggil `/token` dengan `grant_type=refresh_token`. Bila `invalid_grant`, hapus sesi dan arahkan ke `/sso/login`.
-- Logout: hapus sesi lokal, lalu alihkan ke `{SSO}/api/sso/logout` dengan `client_id` dan `post_logout_redirect_uri`.
+- Umur access token 15 menit, refresh token 30 hari dan **dirotasi** setiap dipakai. Setiap refresh yang berhasil harus menulis ulang cookie dengan refresh token terbaru. Memakai token lama membatalkan seluruh rantai. Karena sesi disimpan di cookie, tidak ada kunci di server untuk mencegah dua refresh paralel. Refresh hanya dilakukan saat access token habis, dan kegagalan `invalid_grant` diarahkan ke login ulang.
+- Umur sesi lokal sama dengan access token. Saat habis, panggil `/token` dengan `grant_type=refresh_token`. Bila `invalid_grant`, hapus cookie sesi dan arahkan ke `/sso/login`.
+- Logout: hapus cookie sesi lokal, lalu alihkan ke `{SSO}/api/sso/logout` dengan `client_id` dan `post_logout_redirect_uri`.
 - `client_secret` hanya di environment server. Tidak boleh berawalan `NEXT_PUBLIC_`, tidak boleh masuk repo.
 
-Role dari SSO: **`Kaprodi`, `Dosen`, `Staff Kaprodi`, `Mahasiswa`.** Catatan: dokumen SSO v1.0 masih menyebut `Admin` dan belum memuat `Staff Kaprodi` dan `Mahasiswa`. Perubahan itu harus dilakukan oleh tim SSO. Sampai itu selesai, login dengan role baru bisa ditolak SSO.
+Role dari SSO: **`Kaprodi`, `Dosen`, `Staff Kaprodi`, `Mahasiswa`.** Catatan: dokumen SSO v1.0 masih menyebut `Admin` dan belum memuat `Staff Kaprodi` dan `Mahasiswa`. Perubahan itu harus dilakukan oleh tim SSO. Sampai itu selesai, login dengan role baru bisa ditolak SSO. Role `Staff Kaprodi` yang dipakai di bagian 8.1 sudah termasuk dalam daftar role di atas.
 
 Variabel lingkungan: `SSO_URL` (tanpa `/` akhir, harus sama dengan klaim `iss`), `SSO_CLIENT_ID`, `SSO_CLIENT_SECRET`, `SSO_REDIRECT_URI`, `SESSION_SECRET`.
+
+`SESSION_SECRET` dipakai untuk mengenkripsi refresh token. Mengubahnya membuat semua sesi aktif tidak bisa dibaca, sehingga semua user harus login ulang. Nilainya berbeda untuk setiap aplikasi dan tidak dibagi antar modul.
 
 Pendaftaran modul ke pengelola SSO (`client_id`, `launch_url`, `redirect_uri`, role yang boleh masuk) dilakukan manual oleh tim. Karena Modul 4 dan 7 satu aplikasi, cukup satu `client_id`.
 
@@ -66,12 +77,12 @@ Pendaftaran modul ke pengelola SSO (`client_id`, `launch_url`, `redirect_uri`, r
 
 ### 5.1 Tabel `dosen` dan pendaftaran dosen
 
-Tabel `dosen` **hanya berisi pengguna dengan role selain Mahasiswa**. Mahasiswa tidak pernah masuk tabel ini.
+Tabel `dosen` **hanya berisi pengguna yang sudah mengisi `sinta_id`**. Mahasiswa tidak pernah masuk tabel ini. Staff Kaprodi masuk hanya bila mengisi `sinta_id`.
 
 Alur login pertama:
 
 1. Pengguna login lewat SSO. Bila role Mahasiswa, tidak ada baris `dosen` dan tidak diminta `sinta_id`.
-2. Bila role selain Mahasiswa dan belum ada baris `dosen` dengan `user_id = sub`, pengguna diminta mengisi `sinta_id`.
+2. Bila role Kaprodi atau Dosen dan belum ada baris `dosen` dengan `user_id = sub`, pengguna diminta mengisi `sinta_id`. Untuk Staff Kaprodi, pengisian `sinta_id` **boleh dilewati**. Staff Kaprodi yang melewati tidak punya baris `dosen`, dan bisa mengisi `sinta_id` kapan saja nanti.
 3. Setelah diisi, baris `dosen` dibuat dengan `user_id = sub`, lalu crawler mengisi `nama`, `afiliasi`, `departemen`, skor, metrik, dan data lain dari SINTA.
 4. Login berikutnya mencari baris `dosen` lewat `user_id`.
 
@@ -98,7 +109,7 @@ Data yang diambil per dosen: profil (nama, afiliasi, departemen), skor SINTA, me
 - **Gelar dibuang saat normalisasi** (Dr., Prof., S.Kom., M.T., dst).
 - **Tab gagal tidak menimpa data lama.** Kegagalan dicatat di `crawl_log`.
 - **Status sinkron (`sync_status`).** `IN_PROGRESS` saat berjalan. `SUCCESS` (dan `last_synced_at` diisi) bila semua tab berhasil. `PARTIAL` bila sebagian gagal. `FAILED` bila semua gagal. Sisa `IN_PROGRESS` yang sudah lama dianggap `FAILED`.
-- **Jadwal sinkron ulang.** Dosen diproses bila belum pernah sinkron, sudah lebih dari 7 hari, atau statusnya `FAILED` atau `PARTIAL`.
+- **Aturan 7 hari.** Dosen diproses bila belum pernah sinkron, atau `last_synced_at` sudah lebih dari 7 hari lalu. **Aturan ini berlaku untuk semua peran, termasuk Staff Kaprodi. Tidak ada opsi paksa.** Dosen yang masih dalam 7 hari dilewati dan dicatat sebagai dilewati. Pengecualian untuk status `FAILED` atau `PARTIAL` belum diputuskan (lihat bagian 12).
 - **Jeda.** Sekitar 3 detik antar request ke SINTA dan jeda acak antar dosen (target dalam ringkasan awal). Kode saat ini baru 1,5 detik per tab. Putuskan angkanya, lalu samakan.
 
 ### 5.4 Pengajaran (bidang tridarma ketiga)
@@ -113,7 +124,7 @@ Mengoleksi kinerja dosen di bidang pengajaran. Berkas berupa **link saja** (misa
 ### 5.5 Fase berikutnya (belum dikerjakan, jangan dibangun dulu)
 
 - Grafik profil SINTA ("Latest number of publications" per tahun dan "Article Quartile"). Bisa dihitung dari `publikasi` dan `publikasi_dosen` (filter `source = 'sinta_scopus'`), tetapi hanya akurat untuk dosen dengan 10 artikel Scopus atau kurang, karena batas SINTA publik.
-- Rekap penilaian tridarma dengan kolom TS, TS-1, TS-2 yang diisi manual oleh admin per tahun (bukan dihitung dari crawling). Tabel "Publikasi Ilmiah Hasil Penelitian DTPS" punya 10 jenis publikasi.
+- Rekap penilaian tridarma dengan kolom TS, TS-1, TS-2 yang diisi manual oleh Staff Kaprodi per tahun (bukan dihitung dari crawling). Tabel "Publikasi Ilmiah Hasil Penelitian DTPS" punya 10 jenis publikasi.
 - `kutipan_tahun` (sitasi per tahun dari SerpAPI) sudah dirancang tetapi tidak dipakai, karena alur sekarang hanya SINTA.
 
 ## 6. Modul 4: Arsip Prodi (Ruang Arsip Digital)
@@ -139,36 +150,54 @@ Aturan relasi: relasi antar tabel dalam database memakai foreign key (cascade un
 
 ## 8. Layanan crawler (Python)
 
-Layanan FastAPI kecil di `crawler/`, dipanggil dari route handler Next.js lewat HTTP.
+Layanan FastAPI kecil di `crawler/`, di-deploy sebagai **Render Web Service paket gratis**, dipanggil dari route handler Next.js lewat HTTP.
+
+Sifat layanan:
+
+- **On-demand.** Tidak ada cron job dan tidak ada monitor ping. Sinkron hanya dipicu manual oleh user, dan data SINTA jarang berubah.
+- Paket gratis Render tidur setelah 15 menit tanpa request masuk, dan bangun sekitar satu menit. Sinkron pertama setelah lama tidak dipakai akan terasa lambat. Ini diterima.
+- Kuota gratis Render: 750 jam per bulan per workspace, dibagi untuk semua Web Service gratis di workspace itu. Cek ulang angka ini di dokumentasi Render sebelum deploy.
+- Sinkron 8 dosen memakan sekitar 3–6 menit (15–40 detik per dosen). Karena itu crawling berjalan di background, tidak di dalam request.
 
 Alur sinkron:
 
-1. Front-end memanggil `POST /api/dosen/sinkron` di Next.js.
-2. Route handler memeriksa sesi dan role, lalu mengubah status secara atomik: `updateMany` dengan kondisi `sync_status != IN_PROGRESS`. Bila tidak ada baris berubah, tolak dengan pesan "sedang berjalan".
-3. Route handler memanggil `POST {CRAWLER_URL}/sync` dengan body `{ "sinta_id": "..." }` dan header `X-Internal-Key`, lalu membalas `202 Accepted` **tanpa menunggu**.
-4. Layanan Python menjalankan crawl dan **menulis langsung ke database** memakai logika upsert yang sudah ada. Status akhir `SUCCESS`, `PARTIAL`, atau `FAILED`.
-5. Front-end memeriksa `sync_status` secara berkala.
+1. Saat halaman tombol sinkron dibuka, frontend memanggil route Next.js yang meneruskan `GET /health` ke layanan Python. Tombol dinonaktifkan dan muncul indikator "Server sedang bersiap..." sampai layanan membalas `200 OK`.
+2. User menekan tombol. Route handler Next.js memeriksa sesi dan hak (8.1), lalu menerapkan aturan 7 hari (5.3). Dosen yang masih dalam 7 hari dilewati.
+3. Route handler mengubah status secara atomik: `updateMany` dengan kondisi `sync_status != IN_PROGRESS`. Bila tidak ada baris berubah, tolak dengan pesan "sedang berjalan".
+4. Route handler memanggil `POST {CRAWLER_URL}/sync` dengan body `{ "sinta_id": "..." }` (kosong untuk semua dosen yang lolos aturan 7 hari) dan header `X-Internal-Key`, lalu membalas `202 Accepted` tanpa menunggu.
+5. Layanan Python menjalankan crawl di background dan **menulis langsung ke database** memakai logika upsert. Progres dan status akhir disimpan di database, bukan di memori, supaya tetap terbaca walau layanan restart. Status akhir `SUCCESS`, `PARTIAL`, atau `FAILED`.
+6. Frontend memeriksa `sync_status` lewat route Next.js secara berkala (misalnya tiap 5–10 detik) sampai status tidak lagi `IN_PROGRESS`. Polling ini juga membuat layanan tetap terjaga selama sinkron berjalan.
 
 Aturan:
 
-- Crawling **tidak boleh dijalankan di dalam request** (sekitar 8 tab dengan jeda, 15 sampai 30 detik atau lebih).
-- Layanan Python **tidak boleh publik**. Wajib header rahasia `X-Internal-Key` (nilai di `INTERNAL_KEY`), idealnya hanya di jaringan internal.
-- Hanya satu crawl berjalan pada satu waktu (antrean sederhana), supaya SINTA tidak kebanjiran.
-- Sisa `IN_PROGRESS` yang lama ditandai `FAILED` saat layanan menyala atau bila sudah lewat beberapa menit. Jangan dijalankan di setiap request.
+- Crawling **tidak boleh dijalankan di dalam request**.
+- Layanan Python **tidak boleh publik**. Wajib header rahasia `X-Internal-Key` (nilai di `INTERNAL_KEY`).
+- Browser **tidak boleh memanggil layanan Python langsung**. Semua lewat route Next.js, supaya `INTERNAL_KEY` tidak pernah sampai ke klien.
+- Hanya satu crawl berjalan pada satu waktu (antrean sederhana), supaya SINTA tidak kebanjiran. Penanganan konflik antrean mengikuti bagian 12 nomor 8–9.
+- Sisa `IN_PROGRESS` yang sudah lama ditandai `FAILED` saat layanan menyala. Jangan dijalankan di setiap request.
 - Layanan Python hanya meng-UPDATE baris `dosen` yang sudah ada (dibuat oleh Next.js saat login pertama). Ia tidak membuat baris `dosen`.
+- Layanan Python memakai `DATABASE_URL` berupa URL pooled.
 
-Endpoint layanan: `POST /sync`, `GET /health`.
+Endpoint layanan: `GET /health`, `POST /sync`.
+
+Variabel lingkungan:
+
+- Next.js: `CRAWLER_URL` (alamat layanan Render), `INTERNAL_KEY`.
+- Layanan Python: `INTERNAL_KEY` (nilai sama dengan Next.js), `DATABASE_URL` (URL langsung), `PORT` (diisi Render).
+- Nilai rahasia dibuat sendiri dan tidak pernah ditulis di repo atau di chat. File `.env` wajib di-gitignore.
 
 ### 8.1 Hak menjalankan crawling
 
-| Peran     | Semua dosen | Satu dosen (pilih) | Diri sendiri                      |
-| --------- | ----------- | ------------------ | --------------------------------- |
-| Admin     | ya          | ya                 | ya                                |
-| Dosen     | tidak       | tidak              | ya                                |
-| Mahasiswa | tidak       | tidak              | tidak (tidak punya baris `dosen`) |
+| Peran         | Semua dosen | Satu dosen (pilih) | Diri sendiri                      |
+| ------------- | ----------- | ------------------ | --------------------------------- |
+| Staff Kaprodi | ya          | ya                 | ya, bila sudah mengisi `sinta_id` |
+| Dosen         | tidak       | tidak              | ya                                |
+| Mahasiswa     | tidak       | tidak              | tidak (tidak punya baris `dosen`) |
 
 - Pemeriksaan hak dilakukan di Next.js (route handler), sebelum memanggil layanan Python. Layanan Python hanya memeriksa `X-Internal-Key`.
-- Route Next.js: `POST /api/dosen/sinkron` untuk diri sendiri (`sinta_id` diambil dari sesi, bukan dari body), dan `POST /api/admin/sinkron` untuk admin (body berisi `sinta_id` opsional; kosong berarti semua dosen).
+- Route Next.js: `POST /api/dosen/sinkron` untuk diri sendiri (`sinta_id` diambil dari baris dosen yang user_id-nya sama dengan sub sesi), dan `POST /api/staff-kaprodi/sinkron` untuk Staff Kaprodi (body berisi `sinta_id` opsional; kosong berarti semua dosen).
+- Route `POST /api/dosen/sinkron` menolak bila baris `dosen` belum ada, dengan pesan untuk mengisi `sinta_id` dulu.
+- Aturan 7 hari berlaku untuk semua peran, termasuk Staff Kaprodi. Staff Kaprodi tidak bisa memaksa sinkron sebelum 7 hari.
 - Semua permintaan crawl, baik satu maupun semua dosen, masuk antrean yang sama dan hanya satu yang berjalan dalam satu waktu.
 
 ## 9. Porting MariaDB ke Postgres (Neon) dan Prisma
@@ -211,8 +240,11 @@ sacibiru-modul/
 │  │  ├─ sso/login/route.ts
 │  │  ├─ auth/callback/route.ts
 │  │  └─ api/
+│  │     ├─ crawler/health/route.ts
 │  │     ├─ dosen/sinta-id/route.ts
 │  │     ├─ dosen/sinkron/route.ts
+│  │     ├─ dosen/sinkron/status/route.ts
+│  │     ├─ staff-kaprodi/sinkron/route.ts
 │  │     ├─ arsip/...
 │  │     ├─ kategori/...
 │  │     ├─ pengajaran/...
@@ -233,7 +265,6 @@ sacibiru-modul/
 │  ├─ Dockerfile
 │  └─ .env.example
 ├─ .env.example
-├─ .vercelignore
 └─ package.json
 ```
 
@@ -253,15 +284,18 @@ Temuan dari tinjauan `sinta.py` dan `sinta_to_db.py` (kode ini sudah terbukti ha
 
 ## 12. Keputusan terbuka (tanyakan ke pemilik proyek)
 
-1. **Staff Kaprodi dan `sinta_id`.** Aturan "selain Mahasiswa" mencakup Staff Kaprodi yang biasanya bukan dosen. Apakah hanya Dosen dan Kaprodi yang wajib mengisi `sinta_id`, atau Staff Kaprodi boleh melewati?
+1. _(Sudah diputuskan: pengisian `sinta_id` untuk Staff Kaprodi opsional. Lihat 5.1.)_
 2. **`kelas` per tahun ajaran atau per mata kuliah saja.** Saat ini per kelas (mata kuliah + dosen + tahun ajaran + semester).
-3. **Role dan hak akses.** Siapa boleh melihat dan mengubah apa (misalnya siapa yang boleh mengakses Modul 4, siapa yang boleh melihat data dosen lain, siapa yang menyetujui) **belum ditetapkan**. Jangan menebak. Tanyakan sebelum membuat otorisasi.
-4. **Format `nomor_arsip`** otomatis.
-5. **Label status arsip** (Aktif, Inaktif, Habis Retensi masih usulan).
-6. **Tempat deploy** (menentukan tempat layanan Python dan batas waktu fungsi/tapi kemungkinan vercel).
-7. **Jeda crawling** (1,5 atau 3 detik).
-8. **Konflik antrean**. Saat "sinkron semua" sedang berjalan, permintaan crawl satu dosen ditolak dengan pesan "sedang berjalan", atau masuk antrean?
-9. **Dosen memicu crawl dirinya saat admin sedang sinkron semua.** Apakah tetap ditolak atau diantrekan?
+3. **Hak crawl Kaprodi.** Bagian 8.1 memberi Staff Kaprodi hak sinkron semua dosen dan satu dosen. Apakah role `Kaprodi` juga mendapat hak yang sama, atau hanya Staff Kaprodi?
+4. **Role dan hak akses lainnya.** Siapa boleh melihat dan mengubah apa (misalnya siapa yang boleh mengakses Modul 4, siapa yang boleh melihat data dosen lain, siapa yang menyetujui) **belum ditetapkan**. Jangan menebak. Tanyakan sebelum membuat otorisasi.
+5. **Format `nomor_arsip`** otomatis.
+6. **Label status arsip** (Aktif, Inaktif, Habis Retensi masih usulan).
+7. **Deploy Next.js.** Tempat deploy aplikasi Next.js belum diputuskan. (Deploy crawler sudah diputuskan: Render, lihat bagian 8.)
+8. **Jeda crawling** (1,5 atau 3 detik).
+9. **Konflik antrean.** Saat "sinkron semua" sedang berjalan, permintaan crawl satu dosen ditolak dengan pesan "sedang berjalan", atau masuk antrean?
+10. **Dosen memicu crawl dirinya saat Staff Kaprodi sedang sinkron semua.** Apakah tetap ditolak atau diantrekan?
+11. **Dosen dengan status `FAILED` atau `PARTIAL`.** Boleh diulang sebelum 7 hari, atau tetap menunggu 7 hari seperti dosen lain?
+12. **Pencabutan sesi.** Karena sesi disimpan di cookie, akun yang dicabut admin SSO baru terasa saat refresh berikutnya gagal. Diterima untuk skala tugas ini. Perlu persetujuan tim.
 
 ## 13. Di luar cakupan
 
@@ -271,13 +305,15 @@ Temuan dari tinjauan `sinta.py` dan `sinta_to_db.py` (kode ini sudah terbukti ha
 - Pengisian rekap TS, TS-1, TS-2 dan grafik profil (fase berikutnya, lihat 5.5).
 - Front-end dan UI.
 - SerpAPI / Google Scholar lewat API (tidak dipakai lagi).
+- Cron job dan monitor uptime untuk layanan crawler.
+- Tabel sesi di database. Sesi disimpan di cookie terenkripsi.
 
 ## 14. Urutan pengerjaan (usulan)
 
 1. `schema.prisma` dari ERD versi 6 dan migrasi ke Neon.
 2. Sisi klien SSO: `/sso/login`, `/auth/callback`, sesi, refresh, logout.
 3. Alur login pertama dan pengisian `sinta_id`.
-4. `loader.py` versi Postgres dan layanan FastAPI, lalu route `POST /api/dosen/sinkron`.
+4. `loader.py` versi Postgres dan layanan FastAPI (`/health`, `/sync`), termasuk pengecekan 7 hari, antrean satu job, dan pembersihan `IN_PROGRESS` yang tertinggal. Lalu route Next.js `POST /api/dosen/sinkron`, `POST /api/staff-kaprodi/sinkron`, dan route status.
 5. API Modul 4 (kategori, arsip, `v_arsip`, log aktivitas).
 6. API Modul 7 (tridarma, lalu pengajaran).
-7. Tinjauan keamanan sisi SSO, lalu tes untuk logika murni (normalisasi nama, hash, status retensi, upsert).
+7. Tinjauan keamanan sisi SSO, lalu tes untuk logika murni (normalisasi nama, hash, status retensi, upsert, aturan 7 hari).

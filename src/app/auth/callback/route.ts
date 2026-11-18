@@ -1,38 +1,30 @@
-import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
-
-// Simpan instance JWKS di memori (lazy initialization) agar tidak dieksekusi saat build Vercel
-let jwksCache: ReturnType<typeof createRemoteJWKSet> | null = null;
-
-function getJwks() {
-  const ssoUrl = process.env.SSO_URL;
-  if (!ssoUrl) {
-    throw new Error("Variabel environment SSO_URL belum diatur.");
-  }
-  if (!jwksCache) {
-    jwksCache = createRemoteJWKSet(new URL("/api/sso/jwks", ssoUrl));
-  }
-  return jwksCache;
-}
-
-interface SsoJwtPayload {
-  sub: string;
-  name: string;
-  email: string;
-  nip?: string;
-  role: "Dosen" | "Kaprodi" | "Admin";
-  exp?: number;
-}
+import {
+  encryptRefreshToken,
+  getRefreshCookieOptions,
+  getSessionCookieOptions,
+  getSessionSecretKey,
+  getSsoConfig,
+  isValidHttpUrl,
+  signLocalSession,
+  SSO_REFRESH_COOKIE,
+  SSO_SESSION_COOKIE,
+  SSO_TX_COOKIE,
+  verifySsoAccessToken,
+} from "@/lib/sso";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
   let tx: { state?: string; verifier?: string } = {};
   try {
-    tx = JSON.parse(request.cookies.get("sso_tx")?.value ?? "{}");
+    tx = JSON.parse(request.cookies.get(SSO_TX_COOKIE)?.value ?? "{}");
   } catch {
-    return NextResponse.json({ error: "Data sesi login (sso_tx) rusak." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Data sesi login (sso_tx) rusak." },
+      { status: 400 }
+    );
   }
 
   // 1. Cegah CSRF
@@ -40,19 +32,30 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "State tidak cocok." }, { status: 400 });
   }
 
-  // 2. Error handling jika role tidak sesuai dari SSO
+  // 2. Error handling jika role tidak sesuai atau login dibatalkan di SSO
   if (params.get("error")) {
-    return NextResponse.json({ error: params.get("error_description") ?? "Akses ditolak." }, { status: 403 });
+    return NextResponse.json(
+      { error: params.get("error_description") ?? "Akses ditolak." },
+      { status: 403 }
+    );
   }
 
-  const ssoUrl = process.env.SSO_URL;
-  const clientId = process.env.SSO_CLIENT_ID;
-  const clientSecret = process.env.SSO_CLIENT_SECRET;
-  const redirectUri = process.env.SSO_REDIRECT_URI;
-  const sessionSecret = process.env.SESSION_SECRET;
+  const { ssoUrl, clientId, clientSecret, redirectUri } = getSsoConfig();
 
-  if (!ssoUrl || !clientId || !clientSecret || !redirectUri || !sessionSecret) {
-    return NextResponse.json({ error: "Konfigurasi environment SSO pada server belum lengkap." }, { status: 500 });
+  try {
+    getSessionSecretKey();
+  } catch {
+    return NextResponse.json(
+      { error: "Konfigurasi SESSION_SECRET pada server belum diatur." },
+      { status: 500 }
+    );
+  }
+
+  if (!ssoUrl || !isValidHttpUrl(ssoUrl) || !clientId || !clientSecret || !redirectUri) {
+    return NextResponse.json(
+      { error: "Konfigurasi environment SSO pada server belum lengkap atau tidak valid." },
+      { status: 500 }
+    );
   }
 
   try {
@@ -71,17 +74,23 @@ export async function GET(request: NextRequest) {
     });
 
     if (!res.ok) {
-      return NextResponse.json({ error: "Login SSO gagal saat menukar token." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Login SSO gagal saat menukar token." },
+        { status: 401 }
+      );
     }
 
-    const tokens = await res.json();
+    const tokens = (await res.json()) as {
+      access_token: string;
+      refresh_token?: string;
+    };
 
-    // 4. Memverifikasi tanda tangan, penerbit (iss), tujuan (aud), dan masa berlaku JWT secara lokal
-    const { payload } = await jwtVerify<SsoJwtPayload>(tokens.access_token, getJwks(), {
-      issuer: ssoUrl,
-      audience: clientId,
-      algorithms: ["RS256"],
-    });
+    // 4. Memverifikasi tanda tangan RS256, penerbit (iss), tujuan (aud), dan masa berlaku JWT
+    const payload = await verifySsoAccessToken(
+      tokens.access_token,
+      ssoUrl,
+      clientId
+    );
 
     let dosenId: number | null = null;
 
@@ -119,41 +128,46 @@ export async function GET(request: NextRequest) {
     });
 
     // 7. Buat JWT sesi lokal (berlaku 15 menit sesuai masa aktif access_token)
-    const session = await new SignJWT({
-      sub: payload.sub,
-      dosen_id: dosenId,
-      name: payload.name,
-      email: payload.email,
-      nip: payload.nip ?? null,
-      role: payload.role,
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime(payload.exp!)
-      .sign(new TextEncoder().encode(sessionSecret));
-
-    const isProd = process.env.NODE_ENV === "production";
+    const expTime = payload.exp ?? Math.floor(Date.now() / 1000) + 900;
+    const session = await signLocalSession(
+      {
+        sub: payload.sub,
+        dosen_id: dosenId,
+        name: payload.name,
+        email: payload.email,
+        nip: payload.nip ?? null,
+        role: payload.role,
+      },
+      expTime
+    );
 
     // 8. Redirect ke halaman utama / dashboard sesuai role
     const redirectPath = payload.role === "Admin" ? "/arsip" : "/tridharma";
     const response = NextResponse.redirect(new URL(redirectPath, request.url));
 
-    response.cookies.set("app_session", session, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      path: "/",
-    });
-    response.cookies.set("sso_refresh", tokens.refresh_token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      path: "/",
-    });
-    response.cookies.delete("sso_tx");
+    response.cookies.set(
+      SSO_SESSION_COOKIE,
+      session,
+      getSessionCookieOptions()
+    );
+
+    if (tokens.refresh_token) {
+      const encryptedRefresh = await encryptRefreshToken(tokens.refresh_token);
+      response.cookies.set(
+        SSO_REFRESH_COOKIE,
+        encryptedRefresh,
+        getRefreshCookieOptions()
+      );
+    }
+
+    response.cookies.delete(SSO_TX_COOKIE);
 
     return response;
   } catch (error) {
     console.error("Kesalahan pada saat callback SSO:", error);
-    return NextResponse.json({ error: "Terjadi kesalahan saat memverifikasi sesi SSO." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Terjadi kesalahan saat memverifikasi sesi SSO." },
+      { status: 500 }
+    );
   }
 }

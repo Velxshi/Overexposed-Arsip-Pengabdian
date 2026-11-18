@@ -1,25 +1,29 @@
 import { createHash, randomBytes } from "node:crypto";
-import { NextResponse, type NextRequest } from "next/server";
+import { connection, NextResponse } from "next/server";
+import {
+  getSsoConfig,
+  getSessionCookieOptions,
+  isValidHttpUrl,
+  SSO_TX_COOKIE,
+} from "@/lib/sso";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  await connection();
+
   try {
-    const currentOrigin = request.nextUrl.origin;
-    const ssoUrl = process.env.SSO_URL?.trim();
-    const clientId = process.env.SSO_CLIENT_ID?.trim();
-    const redirectUri = process.env.SSO_REDIRECT_URI?.trim();
+    const { ssoUrl, clientId, redirectUri } = getSsoConfig();
 
-    if (!ssoUrl || !clientId || !redirectUri) {
+    if (!ssoUrl || !isValidHttpUrl(ssoUrl) || !clientId || !redirectUri) {
       return NextResponse.json(
         {
-          error: "Variabel environment SSO belum terbaca di Vercel.",
+          error: "Konfigurasi environment SSO pada server belum lengkap atau tidak valid.",
           detail: {
-            hasSsoUrl: Boolean(ssoUrl),
+            hasValidSsoUrl: Boolean(ssoUrl && isValidHttpUrl(ssoUrl)),
             hasClientId: Boolean(clientId),
             hasRedirectUri: Boolean(redirectUri),
-            origin: currentOrigin,
           },
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -38,23 +42,18 @@ export async function GET(request: NextRequest) {
     }).toString();
 
     const response = NextResponse.redirect(url);
-    response.cookies.set("sso_tx", JSON.stringify({ state, verifier }), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 600,
-    });
+    response.cookies.set(
+      SSO_TX_COOKIE,
+      JSON.stringify({ state, verifier }),
+      getSessionCookieOptions(600)
+    );
 
     return response;
   } catch (err) {
+    console.error("Kesalahan pada rute /sso/login:", err);
     return NextResponse.json(
-      {
-        error: "Terjadi kesalahan di rute /sso/login",
-        pesan: err instanceof Error ? err.message : String(err),
-        nilaiSsoUrlSaatIni: process.env.SSO_URL ?? "KOSONG",
-      },
-      { status: 500 },
+      { error: "Terjadi kesalahan saat memulai proses login SSO." },
+      { status: 500 }
     );
   }
 }

@@ -1,26 +1,94 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  /* Semantic tokens from DESIGN.md (mode Light) */
+  --color-primary: #0101b7;
+  --color-primary-strong: #00288e;
+  --color-secondary: #8dccf1;
+  --color-accent: #ffd166;
+  --color-bg-page: #f2f7ff;
+  --color-bg-surface: #ffffff;
+
+  --color-text-primary: #0b2a4c;
+  --color-text-ink: #131b2e;
+  --color-text-secondary: #444653;
+  --color-text-muted: #5e606e;
+  --color-text-inverse: #ffffff;
+
+  --color-border-default: #d6e0f0;
+  --color-border-strong: #c9d3e6;
+
+  --color-tint-primary: #eaedff;
+  --color-tint-secondary: #e2e7ff;
+  --color-tint-sky: #e3f3fc;
+  --color-tint-accent: #fff3d6;
+  --color-tint-neutral: #eef1f6;
+
+  --color-success-bg: #ddf5e6;
+  --color-success-text: #176f41;
+  --color-warning-bg: #fff0d3;
+  --color-warning-text: #8a5a00;
+  --color-danger-bg: #fde1e1;
+  --color-danger-solid: #b3261e;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--color-bg-page);
+  --color-foreground: var(--color-text-primary);
+  --color-primary: var(--color-primary);
+  --color-primary-strong: var(--color-primary-strong);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-surface: var(--color-bg-surface);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-ink: var(--color-text-ink);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-border-default: var(--color-border-default);
+  --color-border-strong: var(--color-border-strong);
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-bg-page);
+    color: var(--color-text-primary);
+    font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  a[href],
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled {
+    cursor: not-allowed;
+  }
+
+  :where(a[href], button, select, input, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
