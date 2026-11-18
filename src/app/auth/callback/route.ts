@@ -58,6 +58,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const code = params.get("code")?.trim();
+  if (!code) {
+    return NextResponse.json(
+      { error: "Parameter code tidak ditemukan pada callback SSO." },
+      { status: 400 }
+    );
+  }
+
   try {
     // 3. Menukar kode sekali pakai dengan access_token dan refresh_token ke server SSO
     const res = await fetch(new URL("/api/sso/token", ssoUrl), {
@@ -67,15 +75,41 @@ export async function GET(request: NextRequest) {
         grant_type: "authorization_code",
         client_id: clientId,
         client_secret: clientSecret,
-        code: params.get("code") ?? "",
+        code,
         redirect_uri: redirectUri,
         code_verifier: tx.verifier ?? "",
       }),
     });
 
     if (!res.ok) {
+      let ssoError: string | undefined;
+      let ssoDescription: string | undefined;
+      try {
+        const errBody = (await res.json()) as {
+          error?: string;
+          error_description?: string;
+        };
+        ssoError = errBody.error;
+        ssoDescription = errBody.error_description;
+      } catch {
+        ssoError = undefined;
+      }
+
+      console.error("Penukaran token SSO gagal:", {
+        status: res.status,
+        redirected: res.redirected,
+        finalUrl: res.url,
+        ssoError,
+        ssoDescription,
+      });
+
       return NextResponse.json(
-        { error: "Login SSO gagal saat menukar token." },
+        {
+          error: "Login SSO gagal saat menukar token.",
+          ssoStatus: res.status,
+          ssoError: ssoError ?? null,
+          ssoDescription: ssoDescription ?? null,
+        },
         { status: 401 }
       );
     }
