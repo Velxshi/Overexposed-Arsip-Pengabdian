@@ -9,8 +9,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 <!-- END:nextjs-agent-rules -->
 
 <!-- antislop:start -->
+
 ## antislop
+
 For UI, copy, people, mobile layout, or code comments work, read these installed skill files directly (use these paths even if a same-named global skill exists):
+
 - Core filter, always on: `antislop`: `.agents/skills/antislop/SKILL.md`
 - UI / visual: `antislop-ui`: `.agents/skills/antislop-ui/SKILL.md`
 - Copy & text: `antislop-copywriting`: `.agents/skills/antislop-copywriting/SKILL.md`
@@ -22,3 +25,14 @@ Only an explicit choice of antislop during or after selects a session mode. A re
 If the mode is unresolved, ask during/after and end the response; wait for the answer before any UI review, planning, or concept. For read-only tasks, put the active-mode notice only at the start of the final answer, never in progress messages. For editing tasks, announce before the first edit and omit it from the final answer.
 To update antislop later: `npx antislop-ai --update`, or run `npx antislop-ai` and pick Overwrite them.
 <!-- antislop:end -->
+
+## Konteks proyek
+
+Baca dan ikuti PRD berikut sebelum mengerjakan apa pun:
+
+@docs/PRD.md
+
+Aturan kerja:
+
+- Bagian PRD bertanda "usulan" bukan keputusan final.
+- Bagian 12 (Keputusan terbuka) jangan ditebak. Tanyakan ke saya dulu.

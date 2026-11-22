@@ -40,22 +40,24 @@ def kunci(*bagian):
 
 GELAR_DEPAN = {"prof", "dr", "drs", "dra", "ir", "h", "hj"}
 
+# Gelar belakang bertitik: s.kom. / m.t. / m.sc / s.pd.i / ph.d. Tiap segmen maksimal 4 huruf
+# supaya inisial panjang seperti "m.iqbal" tidak ikut terbuang.
+GELAR_BELAKANG = re.compile(r"[a-z]{1,4}(?:\.[a-z]{1,4})+\.?")
+
 
 def norm_nama(nama):
     """
-    Huruf kecil, tanpa aksen, gelar dibuang, tanda baca dibuang, spasi dirapikan.
+    Huruf kecil, tanpa aksen, hanya gelar akademik yang dibuang, tanda baca dibuang, spasi dirapikan.
     'Dr. Mochamad Iqbal Ardimansyah, S.Kom., M.T.' -> 'mochamad iqbal ardimansyah'
+    'Nama, Nama' -> 'nama nama'
     """
     t = unicodedata.normalize("NFKD", nama or "")
     t = "".join(c for c in t if not unicodedata.combining(c)).lower()
-    t = t.split(",")[0]  # gelar belakang biasanya setelah koma
-    kata = []
-    for k in t.split():
-        if re.fullmatch(r"[a-z]+\.[a-z]+\.?", k):  # s.kom. / m.t. / m.sc
-            continue
-        kata.append(k)
+    kata = t.replace(",", " ").split()
     while kata and kata[0].strip(".") in GELAR_DEPAN:
         kata.pop(0)
+    # Kata pertama tidak diperiksa: "M.Ali Rahman" adalah nama, bukan gelar.
+    kata = kata[:1] + [k for k in kata[1:] if not GELAR_BELAKANG.fullmatch(k)]
     t = re.sub(r"[^a-z0-9\s]", " ", " ".join(kata))
     return re.sub(r"\s+", " ", t).strip()
 

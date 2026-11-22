@@ -16,7 +16,7 @@ export async function GET() {
     if (!ssoUrl || !isValidHttpUrl(ssoUrl) || !clientId || !redirectUri) {
       return NextResponse.json(
         {
-          error: "Konfigurasi environment SSO pada server belum lengkap atau tidak valid.",
+          message: "Konfigurasi environment SSO pada server belum lengkap atau tidak valid.",
           detail: {
             hasValidSsoUrl: Boolean(ssoUrl && isValidHttpUrl(ssoUrl)),
             hasClientId: Boolean(clientId),
@@ -52,7 +52,7 @@ export async function GET() {
   } catch (err) {
     console.error("Kesalahan pada rute /sso/login:", err);
     return NextResponse.json(
-      { error: "Terjadi kesalahan saat memulai proses login SSO." },
+      { message: "Terjadi kesalahan saat memulai proses login SSO." },
       { status: 500 }
     );
   }

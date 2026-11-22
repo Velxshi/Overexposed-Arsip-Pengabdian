@@ -6,7 +6,13 @@ import {
   SignJWT,
 } from "jose";
 
-export type SsoRole = "Dosen" | "Kaprodi" | "Admin" | "Mahasiswa" | "Umum";
+export type SsoRole =
+  | "Dosen"
+  | "Kaprodi"
+  | "Staff Kaprodi"
+  | "Admin"
+  | "Mahasiswa"
+  | "Umum";
 
 export interface SsoJwtPayload {
   sub: string;

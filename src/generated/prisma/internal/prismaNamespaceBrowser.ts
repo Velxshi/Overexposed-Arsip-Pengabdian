@@ -311,6 +311,8 @@ export const ArsipScalarFieldEnum = {
   retensi_inaktif_tahun: 'retensi_inaktif_tahun',
   link_berkas: 'link_berkas',
   keterangan: 'keterangan',
+  status_validasi: 'status_validasi',
+  catatan_validasi: 'catatan_validasi',
   dibuat_oleh: 'dibuat_oleh',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -323,9 +325,9 @@ export const LogAktivitasScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
   user_nama: 'user_nama',
+  modul: 'modul',
   aksi: 'aksi',
   objek: 'objek',
-  objek_id: 'objek_id',
   detail: 'detail',
   created_at: 'created_at'
 } as const

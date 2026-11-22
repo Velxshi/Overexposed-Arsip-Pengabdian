@@ -310,21 +310,30 @@ model Kategori {
   @@map("kategori")
 }
 
+enum StatusValidasi {
+  Pending
+  Diterima
+  Ditolak
+}
+
 model Arsip {
-  id                    Int      @id @default(autoincrement())
-  nomor_arsip           String   @unique
+  id                    Int            @id @default(autoincrement())
+  nomor_arsip           String         @unique
   judul                 String
   kategori_id           Int
-  tanggal_arsip         DateTime @db.Date
-  nomor_surat           String?
+  tanggal_arsip         DateTime       @db.Date
+  nomor_surat           String
   pencipta_unit         String?
-  retensi_aktif_tahun   Int      @db.SmallInt
-  retensi_inaktif_tahun Int      @db.SmallInt
+  retensi_aktif_tahun   Int            @db.SmallInt
+  retensi_inaktif_tahun Int            @db.SmallInt
   link_berkas           String
   keterangan            String?
-  dibuat_oleh           String   @db.Uuid
-  created_at            DateTime @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  status_validasi       StatusValidasi @default(Pending)
+  // Wajib saat Ditolak, dicek di server. Di database boleh kosong.
+  catatan_validasi      String?
+  dibuat_oleh           String         @db.Uuid
+  created_at            DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
 
   kategori Kategori @relation(fields: [kategori_id], references: [id], onDelete: Restrict)
 
@@ -335,11 +344,13 @@ model Arsip {
 
 model LogAktivitas {
   id         Int      @id @default(autoincrement())
-  user_id    String   @db.Uuid
-  user_nama  String
+  // Kosong untuk login gagal.
+  user_id    String?  @db.Uuid
+  user_nama  String?
+  // "4", "7", atau "auth". Nilainya dicek di aplikasi.
+  modul      String   @db.VarChar(10)
   aksi       String   @db.VarChar(50)
   objek      String   @db.VarChar(20)
-  objek_id   Int?
   detail     String?
   created_at DateTime @default(now()) @db.Timestamptz(6)
 

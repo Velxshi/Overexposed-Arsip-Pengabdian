@@ -52,6 +52,8 @@ export type ArsipMinAggregateOutputType = {
   retensi_inaktif_tahun: number | null
   link_berkas: string | null
   keterangan: string | null
+  status_validasi: $Enums.StatusValidasi | null
+  catatan_validasi: string | null
   dibuat_oleh: string | null
   created_at: Date | null
   updated_at: Date | null
@@ -69,6 +71,8 @@ export type ArsipMaxAggregateOutputType = {
   retensi_inaktif_tahun: number | null
   link_berkas: string | null
   keterangan: string | null
+  status_validasi: $Enums.StatusValidasi | null
+  catatan_validasi: string | null
   dibuat_oleh: string | null
   created_at: Date | null
   updated_at: Date | null
@@ -86,6 +90,8 @@ export type ArsipCountAggregateOutputType = {
   retensi_inaktif_tahun: number
   link_berkas: number
   keterangan: number
+  status_validasi: number
+  catatan_validasi: number
   dibuat_oleh: number
   created_at: number
   updated_at: number
@@ -119,6 +125,8 @@ export type ArsipMinAggregateInputType = {
   retensi_inaktif_tahun?: true
   link_berkas?: true
   keterangan?: true
+  status_validasi?: true
+  catatan_validasi?: true
   dibuat_oleh?: true
   created_at?: true
   updated_at?: true
@@ -136,6 +144,8 @@ export type ArsipMaxAggregateInputType = {
   retensi_inaktif_tahun?: true
   link_berkas?: true
   keterangan?: true
+  status_validasi?: true
+  catatan_validasi?: true
   dibuat_oleh?: true
   created_at?: true
   updated_at?: true
@@ -153,6 +163,8 @@ export type ArsipCountAggregateInputType = {
   retensi_inaktif_tahun?: true
   link_berkas?: true
   keterangan?: true
+  status_validasi?: true
+  catatan_validasi?: true
   dibuat_oleh?: true
   created_at?: true
   updated_at?: true
@@ -251,12 +263,14 @@ export type ArsipGroupByOutputType = {
   judul: string
   kategori_id: number
   tanggal_arsip: Date
-  nomor_surat: string | null
+  nomor_surat: string
   pencipta_unit: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan: string | null
+  status_validasi: $Enums.StatusValidasi
+  catatan_validasi: string | null
   dibuat_oleh: string
   created_at: Date
   updated_at: Date
@@ -291,12 +305,14 @@ export type ArsipWhereInput = {
   judul?: Prisma.StringFilter<"Arsip"> | string
   kategori_id?: Prisma.IntFilter<"Arsip"> | number
   tanggal_arsip?: Prisma.DateTimeFilter<"Arsip"> | Date | string
-  nomor_surat?: Prisma.StringNullableFilter<"Arsip"> | string | null
+  nomor_surat?: Prisma.StringFilter<"Arsip"> | string
   pencipta_unit?: Prisma.StringNullableFilter<"Arsip"> | string | null
   retensi_aktif_tahun?: Prisma.IntFilter<"Arsip"> | number
   retensi_inaktif_tahun?: Prisma.IntFilter<"Arsip"> | number
   link_berkas?: Prisma.StringFilter<"Arsip"> | string
   keterangan?: Prisma.StringNullableFilter<"Arsip"> | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFilter<"Arsip"> | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.StringNullableFilter<"Arsip"> | string | null
   dibuat_oleh?: Prisma.UuidFilter<"Arsip"> | string
   created_at?: Prisma.DateTimeFilter<"Arsip"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Arsip"> | Date | string
@@ -309,12 +325,14 @@ export type ArsipOrderByWithRelationInput = {
   judul?: Prisma.SortOrder
   kategori_id?: Prisma.SortOrder
   tanggal_arsip?: Prisma.SortOrder
-  nomor_surat?: Prisma.SortOrderInput | Prisma.SortOrder
+  nomor_surat?: Prisma.SortOrder
   pencipta_unit?: Prisma.SortOrderInput | Prisma.SortOrder
   retensi_aktif_tahun?: Prisma.SortOrder
   retensi_inaktif_tahun?: Prisma.SortOrder
   link_berkas?: Prisma.SortOrder
   keterangan?: Prisma.SortOrderInput | Prisma.SortOrder
+  status_validasi?: Prisma.SortOrder
+  catatan_validasi?: Prisma.SortOrderInput | Prisma.SortOrder
   dibuat_oleh?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -330,12 +348,14 @@ export type ArsipWhereUniqueInput = Prisma.AtLeast<{
   judul?: Prisma.StringFilter<"Arsip"> | string
   kategori_id?: Prisma.IntFilter<"Arsip"> | number
   tanggal_arsip?: Prisma.DateTimeFilter<"Arsip"> | Date | string
-  nomor_surat?: Prisma.StringNullableFilter<"Arsip"> | string | null
+  nomor_surat?: Prisma.StringFilter<"Arsip"> | string
   pencipta_unit?: Prisma.StringNullableFilter<"Arsip"> | string | null
   retensi_aktif_tahun?: Prisma.IntFilter<"Arsip"> | number
   retensi_inaktif_tahun?: Prisma.IntFilter<"Arsip"> | number
   link_berkas?: Prisma.StringFilter<"Arsip"> | string
   keterangan?: Prisma.StringNullableFilter<"Arsip"> | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFilter<"Arsip"> | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.StringNullableFilter<"Arsip"> | string | null
   dibuat_oleh?: Prisma.UuidFilter<"Arsip"> | string
   created_at?: Prisma.DateTimeFilter<"Arsip"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Arsip"> | Date | string
@@ -348,12 +368,14 @@ export type ArsipOrderByWithAggregationInput = {
   judul?: Prisma.SortOrder
   kategori_id?: Prisma.SortOrder
   tanggal_arsip?: Prisma.SortOrder
-  nomor_surat?: Prisma.SortOrderInput | Prisma.SortOrder
+  nomor_surat?: Prisma.SortOrder
   pencipta_unit?: Prisma.SortOrderInput | Prisma.SortOrder
   retensi_aktif_tahun?: Prisma.SortOrder
   retensi_inaktif_tahun?: Prisma.SortOrder
   link_berkas?: Prisma.SortOrder
   keterangan?: Prisma.SortOrderInput | Prisma.SortOrder
+  status_validasi?: Prisma.SortOrder
+  catatan_validasi?: Prisma.SortOrderInput | Prisma.SortOrder
   dibuat_oleh?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -373,12 +395,14 @@ export type ArsipScalarWhereWithAggregatesInput = {
   judul?: Prisma.StringWithAggregatesFilter<"Arsip"> | string
   kategori_id?: Prisma.IntWithAggregatesFilter<"Arsip"> | number
   tanggal_arsip?: Prisma.DateTimeWithAggregatesFilter<"Arsip"> | Date | string
-  nomor_surat?: Prisma.StringNullableWithAggregatesFilter<"Arsip"> | string | null
+  nomor_surat?: Prisma.StringWithAggregatesFilter<"Arsip"> | string
   pencipta_unit?: Prisma.StringNullableWithAggregatesFilter<"Arsip"> | string | null
   retensi_aktif_tahun?: Prisma.IntWithAggregatesFilter<"Arsip"> | number
   retensi_inaktif_tahun?: Prisma.IntWithAggregatesFilter<"Arsip"> | number
   link_berkas?: Prisma.StringWithAggregatesFilter<"Arsip"> | string
   keterangan?: Prisma.StringNullableWithAggregatesFilter<"Arsip"> | string | null
+  status_validasi?: Prisma.EnumStatusValidasiWithAggregatesFilter<"Arsip"> | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.StringNullableWithAggregatesFilter<"Arsip"> | string | null
   dibuat_oleh?: Prisma.UuidWithAggregatesFilter<"Arsip"> | string
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Arsip"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Arsip"> | Date | string
@@ -388,12 +412,14 @@ export type ArsipCreateInput = {
   nomor_arsip: string
   judul: string
   tanggal_arsip: Date | string
-  nomor_surat?: string | null
+  nomor_surat: string
   pencipta_unit?: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan?: string | null
+  status_validasi?: $Enums.StatusValidasi
+  catatan_validasi?: string | null
   dibuat_oleh: string
   created_at?: Date | string
   updated_at?: Date | string
@@ -406,12 +432,14 @@ export type ArsipUncheckedCreateInput = {
   judul: string
   kategori_id: number
   tanggal_arsip: Date | string
-  nomor_surat?: string | null
+  nomor_surat: string
   pencipta_unit?: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan?: string | null
+  status_validasi?: $Enums.StatusValidasi
+  catatan_validasi?: string | null
   dibuat_oleh: string
   created_at?: Date | string
   updated_at?: Date | string
@@ -421,12 +449,14 @@ export type ArsipUpdateInput = {
   nomor_arsip?: Prisma.StringFieldUpdateOperationsInput | string
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -439,12 +469,14 @@ export type ArsipUncheckedUpdateInput = {
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   kategori_id?: Prisma.IntFieldUpdateOperationsInput | number
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -456,12 +488,14 @@ export type ArsipCreateManyInput = {
   judul: string
   kategori_id: number
   tanggal_arsip: Date | string
-  nomor_surat?: string | null
+  nomor_surat: string
   pencipta_unit?: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan?: string | null
+  status_validasi?: $Enums.StatusValidasi
+  catatan_validasi?: string | null
   dibuat_oleh: string
   created_at?: Date | string
   updated_at?: Date | string
@@ -471,12 +505,14 @@ export type ArsipUpdateManyMutationInput = {
   nomor_arsip?: Prisma.StringFieldUpdateOperationsInput | string
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -488,12 +524,14 @@ export type ArsipUncheckedUpdateManyInput = {
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   kategori_id?: Prisma.IntFieldUpdateOperationsInput | number
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -521,6 +559,8 @@ export type ArsipCountOrderByAggregateInput = {
   retensi_inaktif_tahun?: Prisma.SortOrder
   link_berkas?: Prisma.SortOrder
   keterangan?: Prisma.SortOrder
+  status_validasi?: Prisma.SortOrder
+  catatan_validasi?: Prisma.SortOrder
   dibuat_oleh?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -545,6 +585,8 @@ export type ArsipMaxOrderByAggregateInput = {
   retensi_inaktif_tahun?: Prisma.SortOrder
   link_berkas?: Prisma.SortOrder
   keterangan?: Prisma.SortOrder
+  status_validasi?: Prisma.SortOrder
+  catatan_validasi?: Prisma.SortOrder
   dibuat_oleh?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -562,6 +604,8 @@ export type ArsipMinOrderByAggregateInput = {
   retensi_inaktif_tahun?: Prisma.SortOrder
   link_berkas?: Prisma.SortOrder
   keterangan?: Prisma.SortOrder
+  status_validasi?: Prisma.SortOrder
+  catatan_validasi?: Prisma.SortOrder
   dibuat_oleh?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -616,16 +660,22 @@ export type ArsipUncheckedUpdateManyWithoutKategoriNestedInput = {
   deleteMany?: Prisma.ArsipScalarWhereInput | Prisma.ArsipScalarWhereInput[]
 }
 
+export type EnumStatusValidasiFieldUpdateOperationsInput = {
+  set?: $Enums.StatusValidasi
+}
+
 export type ArsipCreateWithoutKategoriInput = {
   nomor_arsip: string
   judul: string
   tanggal_arsip: Date | string
-  nomor_surat?: string | null
+  nomor_surat: string
   pencipta_unit?: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan?: string | null
+  status_validasi?: $Enums.StatusValidasi
+  catatan_validasi?: string | null
   dibuat_oleh: string
   created_at?: Date | string
   updated_at?: Date | string
@@ -636,12 +686,14 @@ export type ArsipUncheckedCreateWithoutKategoriInput = {
   nomor_arsip: string
   judul: string
   tanggal_arsip: Date | string
-  nomor_surat?: string | null
+  nomor_surat: string
   pencipta_unit?: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan?: string | null
+  status_validasi?: $Enums.StatusValidasi
+  catatan_validasi?: string | null
   dibuat_oleh: string
   created_at?: Date | string
   updated_at?: Date | string
@@ -682,12 +734,14 @@ export type ArsipScalarWhereInput = {
   judul?: Prisma.StringFilter<"Arsip"> | string
   kategori_id?: Prisma.IntFilter<"Arsip"> | number
   tanggal_arsip?: Prisma.DateTimeFilter<"Arsip"> | Date | string
-  nomor_surat?: Prisma.StringNullableFilter<"Arsip"> | string | null
+  nomor_surat?: Prisma.StringFilter<"Arsip"> | string
   pencipta_unit?: Prisma.StringNullableFilter<"Arsip"> | string | null
   retensi_aktif_tahun?: Prisma.IntFilter<"Arsip"> | number
   retensi_inaktif_tahun?: Prisma.IntFilter<"Arsip"> | number
   link_berkas?: Prisma.StringFilter<"Arsip"> | string
   keterangan?: Prisma.StringNullableFilter<"Arsip"> | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFilter<"Arsip"> | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.StringNullableFilter<"Arsip"> | string | null
   dibuat_oleh?: Prisma.UuidFilter<"Arsip"> | string
   created_at?: Prisma.DateTimeFilter<"Arsip"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Arsip"> | Date | string
@@ -698,12 +752,14 @@ export type ArsipCreateManyKategoriInput = {
   nomor_arsip: string
   judul: string
   tanggal_arsip: Date | string
-  nomor_surat?: string | null
+  nomor_surat: string
   pencipta_unit?: string | null
   retensi_aktif_tahun: number
   retensi_inaktif_tahun: number
   link_berkas: string
   keterangan?: string | null
+  status_validasi?: $Enums.StatusValidasi
+  catatan_validasi?: string | null
   dibuat_oleh: string
   created_at?: Date | string
   updated_at?: Date | string
@@ -713,12 +769,14 @@ export type ArsipUpdateWithoutKategoriInput = {
   nomor_arsip?: Prisma.StringFieldUpdateOperationsInput | string
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -729,12 +787,14 @@ export type ArsipUncheckedUpdateWithoutKategoriInput = {
   nomor_arsip?: Prisma.StringFieldUpdateOperationsInput | string
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -745,12 +805,14 @@ export type ArsipUncheckedUpdateManyWithoutKategoriInput = {
   nomor_arsip?: Prisma.StringFieldUpdateOperationsInput | string
   judul?: Prisma.StringFieldUpdateOperationsInput | string
   tanggal_arsip?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  nomor_surat?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nomor_surat?: Prisma.StringFieldUpdateOperationsInput | string
   pencipta_unit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   retensi_aktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   retensi_inaktif_tahun?: Prisma.IntFieldUpdateOperationsInput | number
   link_berkas?: Prisma.StringFieldUpdateOperationsInput | string
   keterangan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status_validasi?: Prisma.EnumStatusValidasiFieldUpdateOperationsInput | $Enums.StatusValidasi
+  catatan_validasi?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dibuat_oleh?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -770,6 +832,8 @@ export type ArsipSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   retensi_inaktif_tahun?: boolean
   link_berkas?: boolean
   keterangan?: boolean
+  status_validasi?: boolean
+  catatan_validasi?: boolean
   dibuat_oleh?: boolean
   created_at?: boolean
   updated_at?: boolean
@@ -788,6 +852,8 @@ export type ArsipSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   retensi_inaktif_tahun?: boolean
   link_berkas?: boolean
   keterangan?: boolean
+  status_validasi?: boolean
+  catatan_validasi?: boolean
   dibuat_oleh?: boolean
   created_at?: boolean
   updated_at?: boolean
@@ -806,6 +872,8 @@ export type ArsipSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   retensi_inaktif_tahun?: boolean
   link_berkas?: boolean
   keterangan?: boolean
+  status_validasi?: boolean
+  catatan_validasi?: boolean
   dibuat_oleh?: boolean
   created_at?: boolean
   updated_at?: boolean
@@ -824,12 +892,14 @@ export type ArsipSelectScalar = {
   retensi_inaktif_tahun?: boolean
   link_berkas?: boolean
   keterangan?: boolean
+  status_validasi?: boolean
+  catatan_validasi?: boolean
   dibuat_oleh?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type ArsipOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nomor_arsip" | "judul" | "kategori_id" | "tanggal_arsip" | "nomor_surat" | "pencipta_unit" | "retensi_aktif_tahun" | "retensi_inaktif_tahun" | "link_berkas" | "keterangan" | "dibuat_oleh" | "created_at" | "updated_at", ExtArgs["result"]["arsip"]>
+export type ArsipOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nomor_arsip" | "judul" | "kategori_id" | "tanggal_arsip" | "nomor_surat" | "pencipta_unit" | "retensi_aktif_tahun" | "retensi_inaktif_tahun" | "link_berkas" | "keterangan" | "status_validasi" | "catatan_validasi" | "dibuat_oleh" | "created_at" | "updated_at", ExtArgs["result"]["arsip"]>
 export type ArsipInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   kategori?: boolean | Prisma.KategoriDefaultArgs<ExtArgs>
 }
@@ -851,12 +921,14 @@ export type $ArsipPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     judul: string
     kategori_id: number
     tanggal_arsip: Date
-    nomor_surat: string | null
+    nomor_surat: string
     pencipta_unit: string | null
     retensi_aktif_tahun: number
     retensi_inaktif_tahun: number
     link_berkas: string
     keterangan: string | null
+    status_validasi: $Enums.StatusValidasi
+    catatan_validasi: string | null
     dibuat_oleh: string
     created_at: Date
     updated_at: Date
@@ -1295,6 +1367,8 @@ export interface ArsipFieldRefs {
   readonly retensi_inaktif_tahun: Prisma.FieldRef<"Arsip", 'Int'>
   readonly link_berkas: Prisma.FieldRef<"Arsip", 'String'>
   readonly keterangan: Prisma.FieldRef<"Arsip", 'String'>
+  readonly status_validasi: Prisma.FieldRef<"Arsip", 'StatusValidasi'>
+  readonly catatan_validasi: Prisma.FieldRef<"Arsip", 'String'>
   readonly dibuat_oleh: Prisma.FieldRef<"Arsip", 'String'>
   readonly created_at: Prisma.FieldRef<"Arsip", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"Arsip", 'DateTime'>

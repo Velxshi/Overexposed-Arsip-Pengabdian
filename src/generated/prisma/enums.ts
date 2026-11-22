@@ -65,3 +65,12 @@ export const JenisBerkas = {
 } as const
 
 export type JenisBerkas = (typeof JenisBerkas)[keyof typeof JenisBerkas]
+
+
+export const StatusValidasi = {
+  Pending: 'Pending',
+  Diterima: 'Diterima',
+  Ditolak: 'Ditolak'
+} as const
+
+export type StatusValidasi = (typeof StatusValidasi)[keyof typeof StatusValidasi]

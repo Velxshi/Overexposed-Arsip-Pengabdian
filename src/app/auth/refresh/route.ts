@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { db } from "@/lib/db";
+import { cariDosenIdSesi } from "@/lib/dosen-sesi";
 import {
   decryptRefreshToken,
   encryptRefreshToken,
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     getSessionSecretKey();
   } catch {
     return NextResponse.json(
-      { error: "Konfigurasi SESSION_SECRET pada server belum diatur." },
+      { message: "Konfigurasi SESSION_SECRET pada server belum diatur." },
       { status: 500 }
     );
   }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   const encryptedRefresh = request.cookies.get(SSO_REFRESH_COOKIE)?.value;
   if (!encryptedRefresh) {
     return NextResponse.json(
-      { error: "Sesi tidak dapat diperbarui." },
+      { message: "Sesi tidak dapat diperbarui." },
       { status: 401 }
     );
   }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   const refreshToken = await decryptRefreshToken(encryptedRefresh);
   if (!refreshToken) {
     const errRes = NextResponse.json(
-      { error: "Refresh token tidak valid." },
+      { message: "Refresh token tidak valid." },
       { status: 401 }
     );
     errRes.cookies.delete(SSO_SESSION_COOKIE);
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   if (!result.ok) {
     if (result.reason === "revoked") {
       const errRes = NextResponse.json(
-        { error: "Refresh token tidak berlaku." },
+        { message: "Refresh token tidak berlaku." },
         { status: 401 }
       );
       errRes.cookies.delete(SSO_SESSION_COOKIE);
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Layanan SSO sedang tidak tersedia." },
+      { message: "Layanan SSO sedang tidak tersedia." },
       { status: 502 }
     );
   }
@@ -63,14 +63,7 @@ export async function POST(request: NextRequest) {
   try {
     const { payload, refreshToken: nextRefreshToken } = result;
 
-    let dosenId: number | null = null;
-    if (payload.role === "Dosen" || payload.role === "Kaprodi") {
-      const dosen = await db.dosen.findUnique({
-        where: { user_id: String(payload.sub) },
-        select: { id: true },
-      });
-      dosenId = dosen?.id ?? null;
-    }
+    const dosenId = await cariDosenIdSesi(String(payload.sub), payload.role);
 
     const expTime = payload.exp ?? Math.floor(Date.now() / 1000) + 900;
     const newSession = await signLocalSession(
@@ -103,7 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Kesalahan saat memperbarui sesi:", err);
     return NextResponse.json(
-      { error: "Gagal memperbarui sesi." },
+      { message: "Gagal memperbarui sesi." },
       { status: 500 }
     );
   }

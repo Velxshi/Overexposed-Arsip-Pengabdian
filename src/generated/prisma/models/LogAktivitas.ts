@@ -28,21 +28,19 @@ export type AggregateLogAktivitas = {
 
 export type LogAktivitasAvgAggregateOutputType = {
   id: number | null
-  objek_id: number | null
 }
 
 export type LogAktivitasSumAggregateOutputType = {
   id: number | null
-  objek_id: number | null
 }
 
 export type LogAktivitasMinAggregateOutputType = {
   id: number | null
   user_id: string | null
   user_nama: string | null
+  modul: string | null
   aksi: string | null
   objek: string | null
-  objek_id: number | null
   detail: string | null
   created_at: Date | null
 }
@@ -51,9 +49,9 @@ export type LogAktivitasMaxAggregateOutputType = {
   id: number | null
   user_id: string | null
   user_nama: string | null
+  modul: string | null
   aksi: string | null
   objek: string | null
-  objek_id: number | null
   detail: string | null
   created_at: Date | null
 }
@@ -62,9 +60,9 @@ export type LogAktivitasCountAggregateOutputType = {
   id: number
   user_id: number
   user_nama: number
+  modul: number
   aksi: number
   objek: number
-  objek_id: number
   detail: number
   created_at: number
   _all: number
@@ -73,21 +71,19 @@ export type LogAktivitasCountAggregateOutputType = {
 
 export type LogAktivitasAvgAggregateInputType = {
   id?: true
-  objek_id?: true
 }
 
 export type LogAktivitasSumAggregateInputType = {
   id?: true
-  objek_id?: true
 }
 
 export type LogAktivitasMinAggregateInputType = {
   id?: true
   user_id?: true
   user_nama?: true
+  modul?: true
   aksi?: true
   objek?: true
-  objek_id?: true
   detail?: true
   created_at?: true
 }
@@ -96,9 +92,9 @@ export type LogAktivitasMaxAggregateInputType = {
   id?: true
   user_id?: true
   user_nama?: true
+  modul?: true
   aksi?: true
   objek?: true
-  objek_id?: true
   detail?: true
   created_at?: true
 }
@@ -107,9 +103,9 @@ export type LogAktivitasCountAggregateInputType = {
   id?: true
   user_id?: true
   user_nama?: true
+  modul?: true
   aksi?: true
   objek?: true
-  objek_id?: true
   detail?: true
   created_at?: true
   _all?: true
@@ -203,11 +199,11 @@ export type LogAktivitasGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 
 export type LogAktivitasGroupByOutputType = {
   id: number
-  user_id: string
-  user_nama: string
+  user_id: string | null
+  user_nama: string | null
+  modul: string
   aksi: string
   objek: string
-  objek_id: number | null
   detail: string | null
   created_at: Date
   _count: LogAktivitasCountAggregateOutputType | null
@@ -237,22 +233,22 @@ export type LogAktivitasWhereInput = {
   OR?: Prisma.LogAktivitasWhereInput[]
   NOT?: Prisma.LogAktivitasWhereInput | Prisma.LogAktivitasWhereInput[]
   id?: Prisma.IntFilter<"LogAktivitas"> | number
-  user_id?: Prisma.UuidFilter<"LogAktivitas"> | string
-  user_nama?: Prisma.StringFilter<"LogAktivitas"> | string
+  user_id?: Prisma.UuidNullableFilter<"LogAktivitas"> | string | null
+  user_nama?: Prisma.StringNullableFilter<"LogAktivitas"> | string | null
+  modul?: Prisma.StringFilter<"LogAktivitas"> | string
   aksi?: Prisma.StringFilter<"LogAktivitas"> | string
   objek?: Prisma.StringFilter<"LogAktivitas"> | string
-  objek_id?: Prisma.IntNullableFilter<"LogAktivitas"> | number | null
   detail?: Prisma.StringNullableFilter<"LogAktivitas"> | string | null
   created_at?: Prisma.DateTimeFilter<"LogAktivitas"> | Date | string
 }
 
 export type LogAktivitasOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
-  user_nama?: Prisma.SortOrder
+  user_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  user_nama?: Prisma.SortOrderInput | Prisma.SortOrder
+  modul?: Prisma.SortOrder
   aksi?: Prisma.SortOrder
   objek?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrderInput | Prisma.SortOrder
   detail?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
@@ -262,22 +258,22 @@ export type LogAktivitasWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.LogAktivitasWhereInput | Prisma.LogAktivitasWhereInput[]
   OR?: Prisma.LogAktivitasWhereInput[]
   NOT?: Prisma.LogAktivitasWhereInput | Prisma.LogAktivitasWhereInput[]
-  user_id?: Prisma.UuidFilter<"LogAktivitas"> | string
-  user_nama?: Prisma.StringFilter<"LogAktivitas"> | string
+  user_id?: Prisma.UuidNullableFilter<"LogAktivitas"> | string | null
+  user_nama?: Prisma.StringNullableFilter<"LogAktivitas"> | string | null
+  modul?: Prisma.StringFilter<"LogAktivitas"> | string
   aksi?: Prisma.StringFilter<"LogAktivitas"> | string
   objek?: Prisma.StringFilter<"LogAktivitas"> | string
-  objek_id?: Prisma.IntNullableFilter<"LogAktivitas"> | number | null
   detail?: Prisma.StringNullableFilter<"LogAktivitas"> | string | null
   created_at?: Prisma.DateTimeFilter<"LogAktivitas"> | Date | string
 }, "id">
 
 export type LogAktivitasOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
-  user_nama?: Prisma.SortOrder
+  user_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  user_nama?: Prisma.SortOrderInput | Prisma.SortOrder
+  modul?: Prisma.SortOrder
   aksi?: Prisma.SortOrder
   objek?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrderInput | Prisma.SortOrder
   detail?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   _count?: Prisma.LogAktivitasCountOrderByAggregateInput
@@ -292,85 +288,85 @@ export type LogAktivitasScalarWhereWithAggregatesInput = {
   OR?: Prisma.LogAktivitasScalarWhereWithAggregatesInput[]
   NOT?: Prisma.LogAktivitasScalarWhereWithAggregatesInput | Prisma.LogAktivitasScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"LogAktivitas"> | number
-  user_id?: Prisma.UuidWithAggregatesFilter<"LogAktivitas"> | string
-  user_nama?: Prisma.StringWithAggregatesFilter<"LogAktivitas"> | string
+  user_id?: Prisma.UuidNullableWithAggregatesFilter<"LogAktivitas"> | string | null
+  user_nama?: Prisma.StringNullableWithAggregatesFilter<"LogAktivitas"> | string | null
+  modul?: Prisma.StringWithAggregatesFilter<"LogAktivitas"> | string
   aksi?: Prisma.StringWithAggregatesFilter<"LogAktivitas"> | string
   objek?: Prisma.StringWithAggregatesFilter<"LogAktivitas"> | string
-  objek_id?: Prisma.IntNullableWithAggregatesFilter<"LogAktivitas"> | number | null
   detail?: Prisma.StringNullableWithAggregatesFilter<"LogAktivitas"> | string | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"LogAktivitas"> | Date | string
 }
 
 export type LogAktivitasCreateInput = {
-  user_id: string
-  user_nama: string
+  user_id?: string | null
+  user_nama?: string | null
+  modul: string
   aksi: string
   objek: string
-  objek_id?: number | null
   detail?: string | null
   created_at?: Date | string
 }
 
 export type LogAktivitasUncheckedCreateInput = {
   id?: number
-  user_id: string
-  user_nama: string
+  user_id?: string | null
+  user_nama?: string | null
+  modul: string
   aksi: string
   objek: string
-  objek_id?: number | null
   detail?: string | null
   created_at?: Date | string
 }
 
 export type LogAktivitasUpdateInput = {
-  user_id?: Prisma.StringFieldUpdateOperationsInput | string
-  user_nama?: Prisma.StringFieldUpdateOperationsInput | string
+  user_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  user_nama?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modul?: Prisma.StringFieldUpdateOperationsInput | string
   aksi?: Prisma.StringFieldUpdateOperationsInput | string
   objek?: Prisma.StringFieldUpdateOperationsInput | string
-  objek_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   detail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type LogAktivitasUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  user_id?: Prisma.StringFieldUpdateOperationsInput | string
-  user_nama?: Prisma.StringFieldUpdateOperationsInput | string
+  user_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  user_nama?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modul?: Prisma.StringFieldUpdateOperationsInput | string
   aksi?: Prisma.StringFieldUpdateOperationsInput | string
   objek?: Prisma.StringFieldUpdateOperationsInput | string
-  objek_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   detail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type LogAktivitasCreateManyInput = {
   id?: number
-  user_id: string
-  user_nama: string
+  user_id?: string | null
+  user_nama?: string | null
+  modul: string
   aksi: string
   objek: string
-  objek_id?: number | null
   detail?: string | null
   created_at?: Date | string
 }
 
 export type LogAktivitasUpdateManyMutationInput = {
-  user_id?: Prisma.StringFieldUpdateOperationsInput | string
-  user_nama?: Prisma.StringFieldUpdateOperationsInput | string
+  user_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  user_nama?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modul?: Prisma.StringFieldUpdateOperationsInput | string
   aksi?: Prisma.StringFieldUpdateOperationsInput | string
   objek?: Prisma.StringFieldUpdateOperationsInput | string
-  objek_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   detail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type LogAktivitasUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  user_id?: Prisma.StringFieldUpdateOperationsInput | string
-  user_nama?: Prisma.StringFieldUpdateOperationsInput | string
+  user_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  user_nama?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  modul?: Prisma.StringFieldUpdateOperationsInput | string
   aksi?: Prisma.StringFieldUpdateOperationsInput | string
   objek?: Prisma.StringFieldUpdateOperationsInput | string
-  objek_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   detail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -379,25 +375,24 @@ export type LogAktivitasCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   user_nama?: Prisma.SortOrder
+  modul?: Prisma.SortOrder
   aksi?: Prisma.SortOrder
   objek?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
 
 export type LogAktivitasAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrder
 }
 
 export type LogAktivitasMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   user_nama?: Prisma.SortOrder
+  modul?: Prisma.SortOrder
   aksi?: Prisma.SortOrder
   objek?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
@@ -406,16 +401,15 @@ export type LogAktivitasMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   user_nama?: Prisma.SortOrder
+  modul?: Prisma.SortOrder
   aksi?: Prisma.SortOrder
   objek?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
 
 export type LogAktivitasSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  objek_id?: Prisma.SortOrder
 }
 
 
@@ -424,9 +418,9 @@ export type LogAktivitasSelect<ExtArgs extends runtime.Types.Extensions.Internal
   id?: boolean
   user_id?: boolean
   user_nama?: boolean
+  modul?: boolean
   aksi?: boolean
   objek?: boolean
-  objek_id?: boolean
   detail?: boolean
   created_at?: boolean
 }, ExtArgs["result"]["logAktivitas"]>
@@ -435,9 +429,9 @@ export type LogAktivitasSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   id?: boolean
   user_id?: boolean
   user_nama?: boolean
+  modul?: boolean
   aksi?: boolean
   objek?: boolean
-  objek_id?: boolean
   detail?: boolean
   created_at?: boolean
 }, ExtArgs["result"]["logAktivitas"]>
@@ -446,9 +440,9 @@ export type LogAktivitasSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   id?: boolean
   user_id?: boolean
   user_nama?: boolean
+  modul?: boolean
   aksi?: boolean
   objek?: boolean
-  objek_id?: boolean
   detail?: boolean
   created_at?: boolean
 }, ExtArgs["result"]["logAktivitas"]>
@@ -457,25 +451,25 @@ export type LogAktivitasSelectScalar = {
   id?: boolean
   user_id?: boolean
   user_nama?: boolean
+  modul?: boolean
   aksi?: boolean
   objek?: boolean
-  objek_id?: boolean
   detail?: boolean
   created_at?: boolean
 }
 
-export type LogAktivitasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "user_nama" | "aksi" | "objek" | "objek_id" | "detail" | "created_at", ExtArgs["result"]["logAktivitas"]>
+export type LogAktivitasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "user_nama" | "modul" | "aksi" | "objek" | "detail" | "created_at", ExtArgs["result"]["logAktivitas"]>
 
 export type $LogAktivitasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "LogAktivitas"
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    user_id: string
-    user_nama: string
+    user_id: string | null
+    user_nama: string | null
+    modul: string
     aksi: string
     objek: string
-    objek_id: number | null
     detail: string | null
     created_at: Date
   }, ExtArgs["result"]["logAktivitas"]>
@@ -904,9 +898,9 @@ export interface LogAktivitasFieldRefs {
   readonly id: Prisma.FieldRef<"LogAktivitas", 'Int'>
   readonly user_id: Prisma.FieldRef<"LogAktivitas", 'String'>
   readonly user_nama: Prisma.FieldRef<"LogAktivitas", 'String'>
+  readonly modul: Prisma.FieldRef<"LogAktivitas", 'String'>
   readonly aksi: Prisma.FieldRef<"LogAktivitas", 'String'>
   readonly objek: Prisma.FieldRef<"LogAktivitas", 'String'>
-  readonly objek_id: Prisma.FieldRef<"LogAktivitas", 'Int'>
   readonly detail: Prisma.FieldRef<"LogAktivitas", 'String'>
   readonly created_at: Prisma.FieldRef<"LogAktivitas", 'DateTime'>
 }

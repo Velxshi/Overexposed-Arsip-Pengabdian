@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { cariDosenIdSesi } from "@/lib/dosen-sesi";
 import { evaluateRouteRbac } from "@/lib/rbac";
 import {
   decryptRefreshToken,
@@ -72,9 +73,16 @@ export async function proxy(request: NextRequest) {
           const expTime =
             result.payload.exp ?? Math.floor(Date.now() / 1000) + 900;
 
+          // Dicari ulang supaya baris dosen yang dibuat setelah login ikut terbaca.
+          const dosenId = await cariDosenIdSesi(
+            result.payload.sub,
+            result.payload.role,
+            previousSession?.dosen_id ?? null
+          );
+
           activeSession = {
             sub: result.payload.sub,
-            dosen_id: previousSession?.dosen_id ?? null,
+            dosen_id: dosenId,
             name: result.payload.name,
             email: result.payload.email,
             nip: result.payload.nip ?? null,
@@ -111,7 +119,7 @@ export async function proxy(request: NextRequest) {
           : "Anda tidak memiliki izin untuk mengakses resource ini.";
 
       return attachCookies(
-        NextResponse.json({ error: errorMessage }, { status }),
+        NextResponse.json({ message: errorMessage }, { status }),
         refreshedCookies,
         shouldClearStaleCookies
       );
